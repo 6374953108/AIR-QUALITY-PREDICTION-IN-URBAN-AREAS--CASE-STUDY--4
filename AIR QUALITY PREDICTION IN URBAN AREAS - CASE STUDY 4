@@ -7,7 +7,7 @@ from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
 
 # Load dataset
-data = pd.read_csv('air_quality_data.csv', parse_dates=['date'], index_col='date')
+data = pd.read_csv('/content/air_quality_data (1).csv', parse_dates=['date'], index_col='date')
 
 # Select features
 features = ['PM2.5', 'PM10', 'NO2', 'CO', 'temperature', 'humidity', 'traffic']
@@ -49,9 +49,34 @@ model.fit(X_train, y_train, epochs=20, batch_size=16, validation_data=(X_test, y
 
 # Predict and visualize
 predictions = model.predict(X_test)
-predictions = scaler.inverse_transform(np.concatenate((predictions, np.zeros((len(predictions), data.shape[1]-1))), axis=1))[:, 0]
+predictions = scaler.inverse_transform(
+    np.concatenate((predictions, np.zeros((len(predictions), data.shape[1]-1))), axis=1)
+)[:, 0]
 
-plt.plot(y_test, label='Actual AQI')
+y_test_actual = scaler.inverse_transform(
+    np.concatenate((y_test.reshape(-1, 1), np.zeros((len(y_test), data.shape[1]-1))), axis=1)
+)[:, 0]
+
+# Line plot
+plt.figure(figsize=(12, 6))
+plt.plot(y_test_actual, label='Actual AQI')
 plt.plot(predictions, label='Predicted AQI')
 plt.legend()
+plt.title("Actual vs Predicted AQI")
+plt.show()
+
+# Scatter plot
+plt.figure(figsize=(6, 6))
+plt.scatter(y_test_actual, predictions, alpha=0.5)
+plt.xlabel("Actual AQI")
+plt.ylabel("Predicted AQI")
+plt.title("Scatter Plot of Actual vs Predicted AQI")
+plt.show()
+
+# Histogram
+plt.figure(figsize=(8, 6))
+plt.hist(y_test_actual - predictions, bins=30, edgecolor='black', alpha=0.7)
+plt.xlabel("Prediction Error (Actual - Predicted)")
+plt.ylabel("Frequency")
+plt.title("Histogram of Prediction Errors")
 plt.show()
